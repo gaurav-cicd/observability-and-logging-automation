@@ -1,0 +1,38 @@
+groups:
+  - name: container_alerts
+    rules:
+      - alert: ContainerDown
+        expr: absent(container_start_time_seconds{name=~".+"}) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is down"
+          description: "Container {{ $labels.name }} has been down for more than 1 minute"
+
+      - alert: HighCPUUsage
+        expr: container_cpu_usage_seconds_total{container_name!=""} / container_spec_cpu_quota{container_name!=""} * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on container {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using {{ $value | humanizePercentage }} CPU"
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{container_name!=""} / container_spec_memory_limit_bytes{container_name!=""} * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on container {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using {{ $value | humanizePercentage }} memory"
+
+      - alert: HighDiskUsage
+        expr: container_fs_usage_bytes{container_name!=""} / container_fs_limit_bytes{container_name!=""} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on container {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is using {{ $value | humanizePercentage }} disk space" 
